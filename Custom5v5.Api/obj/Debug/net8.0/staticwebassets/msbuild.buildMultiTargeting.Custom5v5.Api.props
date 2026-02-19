@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Custom5v5.Api.props" />
+</Project>
