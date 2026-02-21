@@ -104,7 +104,7 @@ namespace Custom5v5.Application.Matches.Scoring.Performance
             return new PlayerPerformanceResult
             {
                 Puuid = player.Puuid,
-                SummonerName = player.SummonerName,
+                SummonerName = player.RiotIdGameName,
                 TeamId = player.TeamId,
                 GlobalScore = global.Score,
                 GlobalGrade = global.Grade,

@@ -31,3 +31,5 @@ C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Application\obj\Debug\net8.0\Cu
 C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Application\obj\Debug\net8.0\refint\Custom5v5.Application.dll
 C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Application\obj\Debug\net8.0\Custom5v5.Application.pdb
 C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Application\obj\Debug\net8.0\ref\Custom5v5.Application.dll
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Application\obj\Debug\net8.0\Custom5v5.Application.csproj.AssemblyReference.cache
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Application\obj\Debug\net8.0\Custom5v5.Application.sourcelink.json

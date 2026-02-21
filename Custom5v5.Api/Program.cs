@@ -12,6 +12,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // DI
+builder.Services.AddHttpClient("Riot", client =>
+{
+    client.BaseAddress = new Uri("https://europe.api.riotgames.com");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 builder.Services.AddScoped<IGlobalScoreAggregator, WeightedGlobalScoreAggregator>();
 builder.Services.AddScoped<IPerformanceAxisCalculator, GlobalAxisCalculator>();
 builder.Services.AddScoped<IPerformanceAxisCalculator, VersusOpponentAxisCalculator>();
@@ -20,7 +25,7 @@ builder.Services.AddScoped<IPerformanceAxisCalculator, TeamImpactAxisCalculator>
 builder.Services.AddScoped<IPerformanceAxisCalculator, RoleImpactAxisCalculator>();
 builder.Services.AddScoped<IPlayerPerformanceCalculator, PlayerPerformanceCalculator>();
 
-builder.Services.AddScoped<IMatchProvider, FakeMatchProvider>(); // pour l’instant (mock)
+builder.Services.AddScoped<IMatchProvider, MatchProvider>(); // pour l’instant (mock)
 builder.Services.AddScoped<MatchProcessor>();   
 
 var app = builder.Build();

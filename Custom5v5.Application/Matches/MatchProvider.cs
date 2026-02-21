@@ -1,14 +1,51 @@
-﻿using Custom5v5.Application.Matches.Dtos;
+﻿using System.Net;
+using System.Text.Json;
+using System.Net.Http.Json;
+using System.Net.Http;
+using Custom5v5.Application.Matches.Dtos;
 
 
 namespace Custom5v5.Application.Matches;
 
-public sealed class FakeMatchProvider : IMatchProvider
+public sealed class MatchProvider : IMatchProvider
 {
+    private const string _RIOT_API = "REDACTED_RIOT_API_KEY";
+    private const string _REQUEST_PATH = "/lol/match/v5/matches/";
+    private readonly IHttpClientFactory _httpClientFactory;
+    
+    public MatchProvider(IHttpClientFactory httpClientFactory)
+    {
+        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+    }
     public Task<MatchDto?> GetFinishedMatchAsync(string matchId)
     {
-        var match = CreateSampleFinishedMatch();
-        return Task.FromResult<MatchDto?>(match);
+        if (matchId == "fake")
+            return Task.FromResult(CreateSampleFinishedMatch());
+        return RetrieveMatchAsync(matchId);
+    }
+
+    private async Task<MatchDto> RetrieveMatchAsync(string matchId, CancellationToken ct = default)
+    {
+        var client = _httpClientFactory.CreateClient("Riot");
+
+        // BaseAddress = https://europe.api.riotgames.com
+        var url = $"{_REQUEST_PATH}{Uri.EscapeDataString(matchId)}?api_key={Uri.EscapeDataString(_RIOT_API)}";
+
+        using var response = await client.GetAsync(url, ct);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            throw new KeyNotFoundException($"Match introuvable: {matchId}");
+
+        if (response.StatusCode == (HttpStatusCode)429)
+            throw new HttpRequestException("Rate limit Riot (429). Backoff requis.");
+
+        if (response.StatusCode == HttpStatusCode.Forbidden)
+            throw new HttpRequestException("Forbidden (403). API key invalide/expirée.");
+
+        response.EnsureSuccessStatusCode();
+
+        var match = await response.Content.ReadFromJsonAsync<MatchDto>(cancellationToken: ct);
+        return match ?? throw new InvalidOperationException("Réponse Riot vide ou JSON invalide.");
     }
     
     // Exemple "vraie game" (custom) basée sur ton screen

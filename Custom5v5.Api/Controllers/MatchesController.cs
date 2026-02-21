@@ -15,7 +15,7 @@ public sealed class MatchesController : ControllerBase
         _processor = processor;
     }
 
-    [HttpPost("fake")]
+    [HttpPost("retrieve")]
     public async Task<ActionResult<ProcessMatchResponse>> Process([FromBody] ProcessMatchRequest request)
     {
         if (request is null || string.IsNullOrWhiteSpace(request.MatchId))
