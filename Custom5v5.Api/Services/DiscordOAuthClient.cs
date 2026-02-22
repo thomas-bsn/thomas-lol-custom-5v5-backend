@@ -89,4 +89,69 @@ public sealed class DiscordOAuthClient : IDiscordOAuthClient
 
         return me;
     }
+    
+    public async Task<bool> IsMemberOfGuildAsync(
+        string accessToken,
+        string guildId,
+        CancellationToken ct)
+    {
+        using var req = new HttpRequestMessage(
+            HttpMethod.Get,
+            "https://discord.com/api/users/@me/guilds");
+
+        req.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var res = await _http.SendAsync(req, ct);
+        if (!res.IsSuccessStatusCode)
+            return false;
+
+        var json = await res.Content.ReadAsStringAsync(ct);
+        var guilds = JsonSerializer.Deserialize<List<DiscordGuild>>(json)!;
+
+        return guilds.Any(g => g.Id == guildId);
+    }
+
+    public async Task<DiscordTokenResponse> RefreshTokenAsync(string refreshToken, CancellationToken ct)
+    {
+        var clientId = _config["Auth:Discord:ClientId"];
+        var clientSecret = _config["Auth:Discord:ClientSecret"];
+
+        if (string.IsNullOrWhiteSpace(clientId) ||
+            string.IsNullOrWhiteSpace(clientSecret) ||
+            string.IsNullOrWhiteSpace(refreshToken))
+        {
+            throw new InvalidOperationException("Missing Discord OAuth configuration or refresh token.");
+        }
+
+        using var content = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["client_id"] = clientId,
+            ["client_secret"] = clientSecret,
+            ["grant_type"] = "refresh_token",
+            ["refresh_token"] = refreshToken
+        });
+
+        using var response = await _http.PostAsync(
+            "https://discord.com/api/oauth2/token",
+            content,
+            ct
+        );
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            throw new InvalidOperationException(
+                $"Discord token refresh failed ({(int)response.StatusCode}): {body}"
+            );
+        }
+
+        var json = await response.Content.ReadAsStringAsync(ct);
+
+        var token = JsonSerializer.Deserialize<DiscordTokenResponse>(json)
+                    ?? throw new InvalidOperationException("Invalid refresh token response from Discord.");
+
+        return token;
+    }
+    private sealed record DiscordGuild(string Id);
 }

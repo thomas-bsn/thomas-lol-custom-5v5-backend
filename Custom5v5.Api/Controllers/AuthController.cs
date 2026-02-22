@@ -2,6 +2,7 @@
 using Custom5v5.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace Custom5v5.Api.Controllers;
 
@@ -41,8 +42,9 @@ public sealed class AuthController : ControllerBase
         // state = anti-CSRF + anti-replay
         var state = _stateStore.CreateState(returnUrl);
 
-        // scope minimal: identify (tu récupères /users/@me)
-        var scope = "identify";
+        // IMPORTANT: ajoute "guilds" sinon /users/@me/guilds ne marche pas
+        var scope = "identify guilds";
+
         var authorizeUrl =
             "https://discord.com/api/oauth2/authorize" +
             $"?client_id={Uri.EscapeDataString(clientId)}" +
@@ -58,7 +60,10 @@ public sealed class AuthController : ControllerBase
     // GET /auth/discord/callback?code=...&state=...
     [HttpGet("discord/callback")]
     [AllowAnonymous]
-    public async Task<IActionResult> DiscordCallback([FromQuery] string? code, [FromQuery] string? state, CancellationToken ct)
+    public async Task<IActionResult> DiscordCallback(
+        [FromQuery] string? code,
+        [FromQuery] string? state,
+        CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(code))
             return BadRequest(new { error = "missing_code" });
@@ -70,16 +75,27 @@ public sealed class AuthController : ControllerBase
         if (stateData is null)
             return Unauthorized(new { error = "invalid_state" });
 
-        // échange code -> access_token
-        var token = await _discord.ExchangeCodeAsync(code, ct);
-        
-        if (string.IsNullOrWhiteSpace(token.AccessToken))
-            throw new InvalidOperationException($"Discord returned empty access_token Raw response: {System.Text.Json.JsonSerializer.Serialize(token)}");
+        var allowedGuildId = _config["Auth:Discord:AllowedGuildId"];
+        if (string.IsNullOrWhiteSpace(allowedGuildId))
+            throw new InvalidOperationException("Missing Auth:Discord:AllowedGuildId configuration.");
 
-        // appelle Discord /users/@me
+        // 1) échange code -> access_token
+        var token = await _discord.ExchangeCodeAsync(code, ct);
+
+        if (string.IsNullOrWhiteSpace(token.AccessToken))
+            throw new InvalidOperationException(
+                $"Discord returned empty access_token. Raw response: {JsonSerializer.Serialize(token)}"
+            );
+
+        // 2) check guild membership (bloque avant d'émettre un JWT)
+        var isMember = await _discord.IsMemberOfGuildAsync(token.AccessToken, allowedGuildId, ct);
+        if (!isMember)
+            return StatusCode(403, new { error = "not_in_guild" });
+
+        // 3) appelle Discord /users/@me
         var me = await _discord.GetCurrentUserAsync(token.AccessToken, ct);
 
-        // émettre JWT (sub = discord user id)
+        // 4) émettre JWT (sub = discord user id)
         var jwt = _jwt.Issue(new JwtUser(
             DiscordUserId: me.Id,
             Username: me.Username,
@@ -87,7 +103,6 @@ public sealed class AuthController : ControllerBase
         ));
 
         // MVP : on renvoie JSON, le front stocke le token
-        // Alternative : Redirect(stateData.ReturnUrl + "#token=...") si tu veux.
         return Ok(new
         {
             token = jwt.AccessToken,
