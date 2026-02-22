@@ -768,19 +768,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Thomas\\.nuget\\packages\\": {}
+    "C:\\Users\\Torte\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj",
+      "projectUniqueName": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj",
       "projectName": "Custom5v5.Application",
-      "projectPath": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj",
-      "packagesPath": "C:\\Users\\Thomas\\.nuget\\packages\\",
-      "outputPath": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\obj\\",
+      "projectPath": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj",
+      "packagesPath": "C:\\Users\\Torte\\.nuget\\packages\\",
+      "outputPath": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\Thomas\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Torte\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
       ],
       "originalTargetFrameworks": [
         "net8.0"

@@ -33,3 +33,15 @@ C:/repos/thomas-lol-custom-5v5-backend/Custom5v5.Infrastructure/obj/Debug/net8.0
 \\wsl.localhost\Ubuntu\home\thomas-boisson\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\refint\Custom5v5.Infrastructure.dll
 \\wsl.localhost\Ubuntu\home\thomas-boisson\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\Custom5v5.Infrastructure.pdb
 \\wsl.localhost\Ubuntu\home\thomas-boisson\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\ref\Custom5v5.Infrastructure.dll
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\bin\Debug\net8.0\Custom5v5.Infrastructure.deps.json
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\bin\Debug\net8.0\Custom5v5.Infrastructure.dll
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\bin\Debug\net8.0\Custom5v5.Infrastructure.pdb
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\Custom5v5.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\Custom5v5.Infrastructure.AssemblyInfoInputs.cache
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\Custom5v5.Infrastructure.AssemblyInfo.cs
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\Custom5v5.Infrastructure.csproj.CoreCompileInputs.cache
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\Custom5v5.Infrastructure.sourcelink.json
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\Custom5v5.Infrastructure.dll
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\refint\Custom5v5.Infrastructure.dll
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\Custom5v5.Infrastructure.pdb
+C:\repos\thomas-lol-custom-5v5-backend\Custom5v5.Infrastructure\obj\Debug\net8.0\ref\Custom5v5.Infrastructure.dll

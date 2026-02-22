@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj": {}
+    "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj": {}
   },
   "projects": {
-    "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj": {
+    "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj",
+        "projectUniqueName": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj",
         "projectName": "Custom5v5.Infrastructure",
-        "projectPath": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\Thomas\\.nuget\\packages\\",
-        "outputPath": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\obj\\",
+        "projectPath": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\Torte\\.nuget\\packages\\",
+        "outputPath": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Thomas\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Torte\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"

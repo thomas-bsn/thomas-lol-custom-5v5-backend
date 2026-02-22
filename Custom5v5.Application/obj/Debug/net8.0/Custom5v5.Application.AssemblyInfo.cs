@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Custom5v5.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc8b579761bae050cbe149c002f9c7d2624ac0e8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fc5c9bdbdcfa9b98820d626e740b1d4e4c662b16")]
 [assembly: System.Reflection.AssemblyProductAttribute("Custom5v5.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Custom5v5.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
