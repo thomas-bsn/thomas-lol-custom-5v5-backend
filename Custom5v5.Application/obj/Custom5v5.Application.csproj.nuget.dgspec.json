@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj": {}
+    "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj": {}
   },
   "projects": {
-    "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj": {
+    "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj",
+        "projectUniqueName": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj",
         "projectName": "Custom5v5.Application",
-        "projectPath": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj",
-        "packagesPath": "C:\\Users\\Torte\\.nuget\\packages\\",
-        "outputPath": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\obj\\",
+        "projectPath": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\Custom5v5.Application.csproj",
+        "packagesPath": "C:\\Users\\Thomas\\.nuget\\packages\\",
+        "outputPath": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Application\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Torte\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
+          "C:\\Users\\Thomas\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"

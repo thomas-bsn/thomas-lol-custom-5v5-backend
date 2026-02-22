@@ -1,23 +1,29 @@
+using System.Text;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+
 using Custom5v5.Api.Interfaces;
 using Custom5v5.Api.Services;
 using Custom5v5.Application.Matches;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Text;
-using System.Text.Json.Serialization;
-
+using Custom5v5.Infrastructure.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --------------------
+// Controllers + JSON
+// --------------------
 builder.Services
     .AddControllers()
     .AddJsonOptions(o =>
-    {
-        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
+    );
 
+// --------------------
 // Swagger
+// --------------------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -33,8 +39,7 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter: Bearer {your JWT token}"
+        In = ParameterLocation.Header
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -53,28 +58,56 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var jwtIssuer = builder.Configuration["Auth:Jwt:Issuer"];
-var jwtAudience = builder.Configuration["Auth:Jwt:Audience"];
-var jwtKey = builder.Configuration["Auth:Jwt:SigningKey"];
+// --------------------
+// Options binding
+// --------------------
 
+// Riot
+builder.Services.AddOptions<RiotApiOptions>()
+    .Bind(builder.Configuration.GetSection("Auth:Riot"))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.ApiKey), "Auth:Riot:ApiKey missing")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.BaseUrl), "Auth:Riot:BaseUrl missing")
+    .ValidateOnStart();
+
+// Discord OAuth
+builder.Services.AddOptions<DiscordOAuthOptions>()
+    .Bind(builder.Configuration.GetSection("Auth:Discord"))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.ClientId), "Auth:Discord:ClientId missing")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.ClientSecret), "Auth:Discord:ClientSecret missing")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.RedirectUri), "Auth:Discord:RedirectUri missing")
+    .ValidateOnStart();
+
+// JWT
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection("Auth:Jwt"))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Issuer), "Auth:Jwt:Issuer missing")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Audience), "Auth:Jwt:Audience missing")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.SigningKey), "Auth:Jwt:SigningKey missing")
+    .ValidateOnStart();
+
+// --------------------
+// Auth (JWT)
+// --------------------
 builder.Services
-    .AddAuthentication(options =>
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer();
+
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtOptions>>((options, jwtOptions) =>
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
+        var jwt = jwtOptions.Value;
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = jwtIssuer,
+            ValidIssuer = jwt.Issuer,
 
             ValidateAudience = true,
-            ValidAudience = jwtAudience,
+            ValidAudience = jwt.Audience,
 
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!)),
+            IssuerSigningKey =
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
 
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30)
@@ -83,21 +116,41 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// DI
-builder.Services.AddHttpClient("Riot", client =>
+// --------------------
+// HttpClients
+// --------------------
+
+// Riot API
+builder.Services.AddHttpClient("Riot", (sp, client) =>
 {
-    client.BaseAddress = new Uri("https://europe.api.riotgames.com");
+    var riot = sp.GetRequiredService<IOptions<RiotApiOptions>>().Value;
+
+    client.BaseAddress = new Uri(riot.BaseUrl);
     client.Timeout = TimeSpan.FromSeconds(10);
+    client.DefaultRequestHeaders.Add("X-Riot-Token", riot.ApiKey);
 });
 
-builder.Services.AddScoped<IMatchProvider, MatchProvider>(); // pour l’instant (mock)
+// Discord OAuth
+builder.Services.AddHttpClient<IDiscordOAuthClient, DiscordOAuthClient>((sp, client) =>
+{
+    var discord = sp.GetRequiredService<IOptions<DiscordOAuthOptions>>().Value;
+    client.BaseAddress = new Uri("https://discord.com/api/");
+});
+
+// --------------------
+// DI App
+// --------------------
+builder.Services.AddScoped<IMatchProvider, MatchProvider>();
 builder.Services.AddScoped<MatchProcessor>();
+
 builder.Services.AddSingleton<IOAuthStateStore, OAuthStateStore>();
-builder.Services.AddHttpClient<IDiscordOAuthClient, DiscordOAuthClient>();
 builder.Services.AddSingleton<IJwtIssuer, JwtIssuer>();
 builder.Services.AddSingleton<IPlayersSource, JsonPlayersSource>();
 builder.Services.AddSingleton<PollStore>();
 
+// --------------------
+// App
+// --------------------
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -105,9 +158,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

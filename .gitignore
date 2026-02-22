@@ -34,6 +34,7 @@ packages/
 
 # ===== Tests =====
 TestResults/
+replacements.txt
 
 # ===== Environment / secrets =====
 appsettings.Development.json

@@ -8,24 +8,19 @@
     "net8.0": []
   },
   "packageFolders": {
-    "C:\\Users\\Torte\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Thomas\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj",
+      "projectUniqueName": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj",
       "projectName": "Custom5v5.Infrastructure",
-      "projectPath": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj",
-      "packagesPath": "C:\\Users\\Torte\\.nuget\\packages\\",
-      "outputPath": "C:\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\obj\\",
+      "projectPath": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\Custom5v5.Infrastructure.csproj",
+      "packagesPath": "C:\\Users\\Thomas\\.nuget\\packages\\",
+      "outputPath": "\\\\wsl.localhost\\Ubuntu\\home\\thomas-boisson\\repos\\thomas-lol-custom-5v5-backend\\Custom5v5.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Torte\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
+        "C:\\Users\\Thomas\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"

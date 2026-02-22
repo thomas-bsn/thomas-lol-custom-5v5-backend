@@ -9,6 +9,7 @@
       "Custom5v5.Api/1.0.0": {
         "dependencies": {
           "Custom5v5.Application": "1.0.0",
+          "Custom5v5.Infrastructure": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.0",
           "Microsoft.AspNetCore.OpenApi": "8.0.24",
           "Swashbuckle.AspNetCore": "6.5.0",
@@ -335,7 +336,15 @@
         },
         "runtime": {
           "Custom5v5.Application.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Custom5v5.Infrastructure/1.0.0": {
+        "runtime": {
+          "Custom5v5.Infrastructure.dll": {
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -552,6 +561,11 @@
       "hashPath": "system.identitymodel.tokens.jwt.8.16.0.nupkg.sha512"
     },
     "Custom5v5.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Custom5v5.Infrastructure/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
