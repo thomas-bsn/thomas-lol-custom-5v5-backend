@@ -4,10 +4,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 using Custom5v5.Api.Interfaces;
 using Custom5v5.Api.Services;
 using Custom5v5.Application.Matches;
+using Custom5v5.Application.Services;
+using Custom5v5.Infrastructure.Data;
 using Custom5v5.Infrastructure.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,8 +23,14 @@ builder.Services
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
     );
-
 // --------------------
+// EF Core (SQLite)
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
+        .UseSnakeCaseNamingConvention());
+// --------------------
+
 // Swagger
 // --------------------
 builder.Services.AddEndpointsApiExplorer();
@@ -142,6 +151,7 @@ builder.Services.AddHttpClient<IDiscordOAuthClient, DiscordOAuthClient>((sp, cli
 // --------------------
 builder.Services.AddScoped<IMatchProvider, MatchProvider>();
 builder.Services.AddScoped<MatchProcessor>();
+builder.Services.AddScoped<PlayerService>();
 
 builder.Services.AddSingleton<IOAuthStateStore, OAuthStateStore>();
 builder.Services.AddSingleton<IJwtIssuer, JwtIssuer>();
