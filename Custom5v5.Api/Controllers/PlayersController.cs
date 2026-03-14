@@ -1,4 +1,5 @@
-﻿using Custom5v5.Application.Services;
+﻿using Custom5v5.Application.DTOs.Players;
+using Custom5v5.Application.Interfaces;  // ← IPlayerService
 
 namespace Custom5v5.Api.Controllers;
 
@@ -8,9 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 [Route("players")]
 public class PlayersController : ControllerBase
 {
-    private readonly PlayerService _service;
+    private readonly IPlayerService _service;  // ← interface
 
-    public PlayersController(PlayerService service)
+    public PlayersController(IPlayerService service)
     {
         _service = service;
     }
@@ -20,5 +21,12 @@ public class PlayersController : ControllerBase
     {
         var players = await _service.GetPlayersAsync();
         return Ok(players);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<PlayerResponse>> AddPlayer(CreatePlayerRequest request)
+    {
+        var player = await _service.CreatePlayerAsync(request.Prenom, request.RiotId);
+        return Ok(player);
     }
 }

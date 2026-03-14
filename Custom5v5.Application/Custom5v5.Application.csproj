@@ -17,7 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Custom5v5.Infrastructure\Custom5v5.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

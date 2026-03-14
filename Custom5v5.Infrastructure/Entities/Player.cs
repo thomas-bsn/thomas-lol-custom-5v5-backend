@@ -3,7 +3,7 @@
 public class Player
 {
     public int Id { get; set; }
-
+    public string PUUID { get; set; }
     public string Prenom { get; set; } = null!;
 
     public string RiotId { get; set; } = null!;

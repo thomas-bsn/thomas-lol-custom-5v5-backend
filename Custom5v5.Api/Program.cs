@@ -1,3 +1,4 @@
+// Program.cs
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,40 +9,34 @@ using Microsoft.EntityFrameworkCore;
 
 using Custom5v5.Api.Interfaces;
 using Custom5v5.Api.Services;
+using Custom5v5.Application.Interfaces;
 using Custom5v5.Application.Matches;
-using Custom5v5.Application.Services;
 using Custom5v5.Infrastructure.Data;
+using Custom5v5.Infrastructure.Data.Repositories;   // ← nouveau
 using Custom5v5.Infrastructure.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --------------------
 // Controllers + JSON
-// --------------------
 builder.Services
     .AddControllers()
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
     );
-// --------------------
-// EF Core (SQLite)
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
-        .UseSnakeCaseNamingConvention());
-// --------------------
+// EF Core
+builder.Services.AddDbContext<AppDbContext>((sp, options) =>
+{
+    var db = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+    var connection = $"Host={db.Host};Port={db.Port};Database={db.Database};Username={db.Username};Password={db.Password}";
+    options.UseNpgsql(connection).UseSnakeCaseNamingConvention();
+});
 
 // Swagger
-// --------------------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Custom5v5.Api",
-        Version = "v1"
-    });
-
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Custom5v5.Api", Version = "v1" });
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -50,35 +45,25 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT",
         In = ParameterLocation.Header
     });
-
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             Array.Empty<string>()
         }
     });
 });
 
-// --------------------
-// Options binding
-// --------------------
-
-// Riot
+// Options
 builder.Services.AddOptions<RiotApiOptions>()
     .Bind(builder.Configuration.GetSection("Auth:Riot"))
     .Validate(o => !string.IsNullOrWhiteSpace(o.ApiKey), "Auth:Riot:ApiKey missing")
     .Validate(o => !string.IsNullOrWhiteSpace(o.BaseUrl), "Auth:Riot:BaseUrl missing")
     .ValidateOnStart();
 
-// Discord OAuth
 builder.Services.AddOptions<DiscordOAuthOptions>()
     .Bind(builder.Configuration.GetSection("Auth:Discord"))
     .Validate(o => !string.IsNullOrWhiteSpace(o.ClientId), "Auth:Discord:ClientId missing")
@@ -86,7 +71,6 @@ builder.Services.AddOptions<DiscordOAuthOptions>()
     .Validate(o => !string.IsNullOrWhiteSpace(o.RedirectUri), "Auth:Discord:RedirectUri missing")
     .ValidateOnStart();
 
-// JWT
 builder.Services.AddOptions<JwtOptions>()
     .Bind(builder.Configuration.GetSection("Auth:Jwt"))
     .Validate(o => !string.IsNullOrWhiteSpace(o.Issuer), "Auth:Jwt:Issuer missing")
@@ -94,9 +78,13 @@ builder.Services.AddOptions<JwtOptions>()
     .Validate(o => !string.IsNullOrWhiteSpace(o.SigningKey), "Auth:Jwt:SigningKey missing")
     .ValidateOnStart();
 
-// --------------------
-// Auth (JWT)
-// --------------------
+builder.Services.AddOptions<DatabaseOptions>()
+    .Bind(builder.Configuration.GetSection("Database"))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Username), "Database:Username missing")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Password), "Database:Password missing")
+    .ValidateOnStart();
+
+// Auth JWT
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer();
@@ -105,19 +93,14 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
     .Configure<IOptions<JwtOptions>>((options, jwtOptions) =>
     {
         var jwt = jwtOptions.Value;
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidIssuer = jwt.Issuer,
-
             ValidateAudience = true,
             ValidAudience = jwt.Audience,
-
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey =
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
-
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30)
         };
@@ -125,42 +108,32 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization();
 
-// --------------------
 // HttpClients
-// --------------------
-
-// Riot API
-builder.Services.AddHttpClient("Riot", (sp, client) =>
+builder.Services.AddHttpClient<IRiotService, RiotService>((sp, client) =>
 {
     var riot = sp.GetRequiredService<IOptions<RiotApiOptions>>().Value;
-
     client.BaseAddress = new Uri(riot.BaseUrl);
     client.Timeout = TimeSpan.FromSeconds(10);
     client.DefaultRequestHeaders.Add("X-Riot-Token", riot.ApiKey);
 });
 
-// Discord OAuth
 builder.Services.AddHttpClient<IDiscordOAuthClient, DiscordOAuthClient>((sp, client) =>
 {
-    var discord = sp.GetRequiredService<IOptions<DiscordOAuthOptions>>().Value;
     client.BaseAddress = new Uri("https://discord.com/api/");
 });
 
-// --------------------
-// DI App
-// --------------------
+// DI
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();  // ← nouveau
+builder.Services.AddScoped<IPlayerService, PlayerService>();        // ← remplace PlayerService direct
 builder.Services.AddScoped<IMatchProvider, MatchProvider>();
 builder.Services.AddScoped<MatchProcessor>();
-builder.Services.AddScoped<PlayerService>();
 
 builder.Services.AddSingleton<IOAuthStateStore, OAuthStateStore>();
 builder.Services.AddSingleton<IJwtIssuer, JwtIssuer>();
 builder.Services.AddSingleton<IPlayersSource, JsonPlayersSource>();
 builder.Services.AddSingleton<PollStore>();
 
-// --------------------
 // App
-// --------------------
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
