@@ -14,6 +14,7 @@ using Custom5v5.Application.Matches;
 using Custom5v5.Infrastructure.Data;
 using Custom5v5.Infrastructure.Data.Repositories;   // ← nouveau
 using Custom5v5.Infrastructure.Options;
+using Custom5v5.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -130,7 +131,6 @@ builder.Services.AddScoped<MatchProcessor>();
 
 builder.Services.AddSingleton<IOAuthStateStore, OAuthStateStore>();
 builder.Services.AddSingleton<IJwtIssuer, JwtIssuer>();
-builder.Services.AddSingleton<IPlayersSource, JsonPlayersSource>();
 builder.Services.AddSingleton<PollStore>();
 
 // App

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
-using Custom5v5.Api.Contracts;
 using Custom5v5.Api.Interfaces;
+using Custom5v5.Application.DTOs.Players;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Custom5v5.Api.Services;
 

@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Custom5v5.Api.Contracts;
-using Custom5v5.Api.Services;
+using Custom5v5.Application.DTOs.Poll;
+using Custom5v5.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +17,6 @@ public sealed class PollController : ControllerBase
         _polls = polls;
     }
 
-    // DEV: open poll (no auth for now)
     [HttpPost("/dev/poll/open")]
     public ActionResult<PollDto> Open([FromBody] OpenPollRequest req)
     {
@@ -40,7 +40,12 @@ public sealed class PollController : ControllerBase
         if (string.IsNullOrWhiteSpace(voterId))
             return Unauthorized();
 
-        _polls.UpsertBallot(voterId, req);
+        // Mapper le contrat HTTP vers le DTO Application
+        var dto = new SubmitBallotDto(
+            req.Votes.Select(v => new VoteDto(v.PlayerId, (Grade)v.Grade)).ToList()
+        );
+
+        _polls.UpsertBallot(voterId, dto);
         return Ok(new { ok = true });
     }
 
