@@ -18,7 +18,10 @@ using Custom5v5.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var hasDatabaseUrl = !string.IsNullOrWhiteSpace(builder.Configuration["DATABASE_URL"]);
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL") 
+                  ?? builder.Configuration["DATABASE_URL"];
+
+var hasDatabaseUrl = !string.IsNullOrWhiteSpace(databaseUrl);
 var allowedOrigins = builder.Configuration["AllowedOrigins"] ?? "http://localhost:3000";
 
 // CORS
@@ -45,20 +48,22 @@ builder.Services
 // EF Core
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
+    var dbUrl = Environment.GetEnvironmentVariable("DATABASE_URL") 
+                ?? builder.Configuration["DATABASE_URL"];
+    
     string connection;
-
-    if (hasDatabaseUrl)
+    if (!string.IsNullOrWhiteSpace(dbUrl))
     {
-        var uri = new Uri(builder.Configuration["DATABASE_URL"]!);
+        var uri = new Uri(dbUrl);
         var userInfo = uri.UserInfo.Split(':');
-        connection = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]}";
+        connection = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={Uri.UnescapeDataString(userInfo[1])}";
     }
     else
     {
         var db = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
         connection = $"Host={db.Host};Port={db.Port};Database={db.Database};Username={db.Username};Password={db.Password}";
     }
-
+    
     options.UseNpgsql(connection).UseSnakeCaseNamingConvention();
 });
 
