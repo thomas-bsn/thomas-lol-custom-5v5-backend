@@ -53,6 +53,9 @@ public sealed class JwtIssuer : IJwtIssuer
 
             new(JwtRegisteredClaimNames.Iat, ToUnixTimeSeconds(now).ToString(), ClaimValueTypes.Integer64),
         };
+        
+        if (!string.IsNullOrWhiteSpace(user.AvatarUrl))
+            claims.Add(new Claim("avatar_url", user.AvatarUrl));
 
         var creds = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
 

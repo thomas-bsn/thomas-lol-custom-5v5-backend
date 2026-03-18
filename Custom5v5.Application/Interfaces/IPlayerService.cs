@@ -6,4 +6,8 @@ public interface IPlayerService
 {
     Task<List<PlayerDto>> GetPlayersAsync();
     Task<PlayerResponse> CreatePlayerAsync(string prenom, string riotId);
+    Task RefreshAllRanksAsync();
+    Task LinkPlayerAsync(string discordUserId, int playerId);
+    Task<PlayerDto?> GetPlayerByDiscordIdAsync(string discordUserId);
+    Task LinkPlayerAsync(string discordUserId, int playerId, string? username, string? avatarUrl);
 }

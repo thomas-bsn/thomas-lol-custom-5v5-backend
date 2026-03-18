@@ -8,4 +8,5 @@ public class PlayerDto
     public string? PUUID { get; set; }
     public string? RankTier { get; set; }
     public int? RankDivision { get; set; }
+    public int? LP { get; set; }
 }

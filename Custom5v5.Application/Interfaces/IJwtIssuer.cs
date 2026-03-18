@@ -8,7 +8,8 @@ public interface IJwtIssuer
 public sealed record JwtUser(
     string DiscordUserId,
     string Username,
-    string? Discriminator
+    string? Discriminator,
+    string? AvatarUrl
 );
 
 public sealed record JwtIssueResult(

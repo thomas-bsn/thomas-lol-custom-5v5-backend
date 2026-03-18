@@ -19,12 +19,22 @@ using Custom5v5.Infrastructure.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Controllers + JSON
+var allowedOrigins = builder.Configuration["AllowedOrigins"] ?? "http://localhost:3000";
+builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.WithOrigins(allowedOrigins.Split(","))
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+    });
+builder.Services.AddHostedService<RefreshRanksJob>();
 builder.Services
     .AddControllers()
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
     );
-
 // EF Core
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
@@ -127,6 +137,7 @@ builder.Services.AddHttpClient<IDiscordOAuthClient, DiscordOAuthClient>((sp, cli
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();  // ← nouveau
 builder.Services.AddScoped<IPlayerService, PlayerService>();        // ← remplace PlayerService direct
 builder.Services.AddScoped<IMatchProvider, MatchProvider>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<MatchProcessor>();
 
 builder.Services.AddSingleton<IOAuthStateStore, OAuthStateStore>();
@@ -136,6 +147,12 @@ builder.Services.AddSingleton<PollStore>();
 // App
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var playerService = scope.ServiceProvider.GetRequiredService<IPlayerService>();
+    await playerService.RefreshAllRanksAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -144,5 +161,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors();
 app.MapControllers();
 app.Run();

@@ -1,5 +1,4 @@
-﻿// Custom5v5.Infrastructure/Data/Repositories/PlayerRepository.cs
-using Custom5v5.Application.DTOs.Players;
+﻿using Custom5v5.Application.DTOs.Players;
 using Custom5v5.Application.Interfaces;
 using Custom5v5.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +18,20 @@ public class PlayerRepository : IPlayerRepository
             .ToListAsync();
     }
 
-    public Task<bool> ExistsByRiotIdAsync(string riotId) =>
-        _db.Players.AnyAsync(p => p.RiotId == riotId);
+    public Task<bool> ExistsByPuuidAsync(string puuid) =>
+        _db.Players.AnyAsync(p => p.PUUID == puuid);
+
+    public async Task UpdateRankAsync(int id, string? tier, int? division, int? lp)
+    {
+        var player = await _db.Players.FindAsync(id);
+        if (player == null) return;
+
+        player.RankTier = tier;
+        player.RankDivision = division;
+        player.LP = lp;
+
+        await _db.SaveChangesAsync();
+    }
 
     public async Task<PlayerDto> AddAsync(PlayerDto dto)
     {
@@ -31,7 +42,8 @@ public class PlayerRepository : IPlayerRepository
             PUUID = dto.PUUID,
             RankTier = dto.RankTier,
             RankDivision = dto.RankDivision,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            LP = dto.LP,
         };
 
         _db.Players.Add(player);
@@ -41,6 +53,25 @@ public class PlayerRepository : IPlayerRepository
         return dto;
     }
 
+    // Lier un player à un user
+    public async Task LinkUserAsync(int playerId, int userId)
+    {
+        var player = await _db.Players.FindAsync(playerId);
+        if (player == null) throw new InvalidOperationException("Player not found");
+
+        player.UserId = userId;
+        await _db.SaveChangesAsync();
+    }
+
+    // Récupérer le player lié à un userId
+    public async Task<PlayerDto?> GetByUserIdAsync(int userId)
+    {
+        var player = await _db.Players
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        return player == null ? null : ToDto(player);
+    }
+
     private static PlayerDto ToDto(Player p) => new()
     {
         Id = p.Id,
@@ -48,6 +79,7 @@ public class PlayerRepository : IPlayerRepository
         RiotId = p.RiotId,
         PUUID = p.PUUID,
         RankTier = p.RankTier,
-        RankDivision = p.RankDivision
+        RankDivision = p.RankDivision,
+        LP = p.LP
     };
 }

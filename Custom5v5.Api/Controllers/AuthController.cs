@@ -27,8 +27,6 @@ public sealed class AuthController : ControllerBase
         _jwt = jwt;
     }
 
-    // 1) Redirect vers Discord OAuth2 authorize
-    // GET /auth/discord/login?returnUrl=http://localhost:3000/auth/callback
     [HttpGet("discord/login")]
     [AllowAnonymous]
     public IActionResult DiscordLogin([FromQuery] string? returnUrl = null)
@@ -39,10 +37,7 @@ public sealed class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(redirectUri))
             return Problem("Missing Auth:Discord:ClientId or Auth:Discord:RedirectUri in configuration.");
 
-        // state = anti-CSRF + anti-replay
         var state = _stateStore.CreateState(returnUrl);
-
-        // IMPORTANT: ajoute "guilds" sinon /users/@me/guilds ne marche pas
         var scope = "identify guilds";
 
         var authorizeUrl =
@@ -56,8 +51,6 @@ public sealed class AuthController : ControllerBase
         return Redirect(authorizeUrl);
     }
 
-    // 2) Callback Discord -> échange code -> /users/@me -> JWT
-    // GET /auth/discord/callback?code=...&state=...
     [HttpGet("discord/callback")]
     [AllowAnonymous]
     public async Task<IActionResult> DiscordCallback(
@@ -79,7 +72,6 @@ public sealed class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(allowedGuildId))
             throw new InvalidOperationException("Missing Auth:Discord:AllowedGuildId configuration.");
 
-        // 1) échange code -> access_token
         var token = await _discord.ExchangeCodeAsync(code, ct);
 
         if (string.IsNullOrWhiteSpace(token.AccessToken))
@@ -87,64 +79,52 @@ public sealed class AuthController : ControllerBase
                 $"Discord returned empty access_token. Raw response: {JsonSerializer.Serialize(token)}"
             );
 
-        // 2) check guild membership (bloque avant d'émettre un JWT)
         var isMember = await _discord.IsMemberOfGuildAsync(token.AccessToken, allowedGuildId, ct);
         if (!isMember)
             return StatusCode(403, new { error = "not_in_guild" });
 
-        // 3) appelle Discord /users/@me
         var me = await _discord.GetCurrentUserAsync(token.AccessToken, ct);
 
-        // 4) émettre JWT (sub = discord user id)
+        // Construire l'URL de l'avatar
+        var avatarUrl = me.Avatar != null
+            ? $"https://cdn.discordapp.com/avatars/{me.Id}/{me.Avatar}.png"
+            : $"https://cdn.discordapp.com/embed/avatars/{long.Parse(me.Id) % 5}.png";
+
         var jwt = _jwt.Issue(new JwtUser(
             DiscordUserId: me.Id,
             Username: me.Username,
-            Discriminator: me.Discriminator
+            Discriminator: me.Discriminator,
+            AvatarUrl: avatarUrl
         ));
 
-        // MVP : on renvoie JSON, le front stocke le token
-        return Ok(new
-        {
-            token = jwt.AccessToken,
-            expiresAtUtc = jwt.ExpiresAtUtc,
-            user = new
-            {
-                discordUserId = me.Id,
-                username = me.Username,
-                discriminator = me.Discriminator
-            },
-            returnUrl = stateData.ReturnUrl
-        });
+        var frontUrl = $"http://localhost:3000/account/callback" +
+                       $"?token={Uri.EscapeDataString(jwt.AccessToken)}" +
+                       $"&username={Uri.EscapeDataString(me.Username ?? "")}" +
+                       $"&avatarUrl={Uri.EscapeDataString(avatarUrl)}";
+
+        return Redirect(frontUrl);
     }
 
-    // 3) Who am I (JWT required)
-    // GET /auth/me
     [HttpGet("me")]
     [Authorize]
     public IActionResult Me()
     {
         var discordUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
         var username = User.FindFirstValue(ClaimTypes.Name);
+        var avatarUrl = User.FindFirstValue("avatar_url");
 
         return Ok(new
         {
             discordUserId,
-            username
+            username,
+            avatarUrl
         });
     }
 
-    // 4) Logout (JWT stateless => rien à faire côté serveur)
-    // POST /auth/logout
     [HttpPost("logout")]
     [Authorize]
     public IActionResult Logout()
     {
-        // Avec JWT stateless, "logout" = client delete token.
-        // Si tu veux une vraie révocation: blacklist jti en DB/redis (pas MVP).
         return Ok(new { ok = true });
     }
 }
-
-
-
-

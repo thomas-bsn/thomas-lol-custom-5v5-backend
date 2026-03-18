@@ -27,7 +27,7 @@ public class RiotService : IRiotService
     // Bas niveau : gameName + tag → puuid
     private async Task<string?> GetPuuidAsync(string gameName, string tagLine)
     {
-        var url = $"https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}";
+        var url = $"riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}";
         var res = await _http.GetFromJsonAsync<AccountResponse>(url);
         return res?.puuid;
     }
@@ -35,17 +35,18 @@ public class RiotService : IRiotService
     // Bas niveau : puuid → rank
     public async Task<RiotRankDto?> GetRankFromPuuidAsync(string puuid)
     {
+        // euw1 est un domaine différent, il faut une URL absolue ici
         var url = $"https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}";
-        var leagues = await _http.GetFromJsonAsync<List<LeagueResponse>>(url);
+        var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Headers.Add("X-Riot-Token", _http.DefaultRequestHeaders.GetValues("X-Riot-Token").First());
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+        var leagues = await res.Content.ReadFromJsonAsync<List<LeagueResponse>>();
 
         var soloQueue = leagues?.FirstOrDefault(x => x.QueueType == "RANKED_SOLO_5x5");
         if (soloQueue == null) return null;
 
-        return new RiotRankDto
-        {
-            Tier = soloQueue.Tier,
-            Division = soloQueue.Rank
-        };
+        return new RiotRankDto { Tier = soloQueue.Tier, Division = soloQueue.Rank, LP = soloQueue.LeaguePoints };
     }
 
     private static (string GameName, string TagLine) SplitRiotId(string riotId)

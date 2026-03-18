@@ -5,6 +5,9 @@ using Custom5v5.Application.DTOs.Players;
 public interface IPlayerRepository
 {
     Task<List<PlayerDto>> GetAllAsync();
-    Task<bool> ExistsByRiotIdAsync(string riotId);
+    Task<bool> ExistsByPuuidAsync(string puuid);
     Task<PlayerDto> AddAsync(PlayerDto player);
+    Task UpdateRankAsync(int id, string? tier, int? division, int? lp);
+    Task LinkUserAsync(int playerId, int userId);
+    Task<PlayerDto?> GetByUserIdAsync(int userId);
 }
