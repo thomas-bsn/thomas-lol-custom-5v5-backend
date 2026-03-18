@@ -12,39 +12,44 @@ using Custom5v5.Api.Services;
 using Custom5v5.Application.Interfaces;
 using Custom5v5.Application.Matches;
 using Custom5v5.Infrastructure.Data;
-using Custom5v5.Infrastructure.Data.Repositories;   // ← nouveau
+using Custom5v5.Infrastructure.Data.Repositories;
 using Custom5v5.Infrastructure.Options;
 using Custom5v5.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers + JSON
+var hasDatabaseUrl = !string.IsNullOrWhiteSpace(builder.Configuration["DATABASE_URL"]);
 var allowedOrigins = builder.Configuration["AllowedOrigins"] ?? "http://localhost:3000";
+
+// CORS
 builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
     {
-        options.AddDefaultPolicy(policy =>
-        {
-            policy.WithOrigins(allowedOrigins.Split(","))
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
+        policy.WithOrigins(allowedOrigins.Split(","))
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
+});
+
+// Background job
 builder.Services.AddHostedService<RefreshRanksJob>();
+
+// Controllers + JSON
 builder.Services
     .AddControllers()
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
     );
+
 // EF Core
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
-    var databaseUrl = builder.Configuration["DATABASE_URL"];
-    
     string connection;
-    if (!string.IsNullOrWhiteSpace(databaseUrl))
+
+    if (hasDatabaseUrl)
     {
-        // Format Railway: postgresql://user:password@host:port/database
-        var uri = new Uri(databaseUrl);
+        var uri = new Uri(builder.Configuration["DATABASE_URL"]!);
         var userInfo = uri.UserInfo.Split(':');
         connection = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]}";
     }
@@ -53,7 +58,7 @@ builder.Services.AddDbContext<AppDbContext>((sp, options) =>
         var db = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
         connection = $"Host={db.Host};Port={db.Port};Database={db.Database};Username={db.Username};Password={db.Password}";
     }
-    
+
     options.UseNpgsql(connection).UseSnakeCaseNamingConvention();
 });
 
@@ -103,11 +108,20 @@ builder.Services.AddOptions<JwtOptions>()
     .Validate(o => !string.IsNullOrWhiteSpace(o.SigningKey), "Auth:Jwt:SigningKey missing")
     .ValidateOnStart();
 
-builder.Services.AddOptions<DatabaseOptions>()
-    .Bind(builder.Configuration.GetSection("Database"))
-    .Validate(o => !string.IsNullOrWhiteSpace(o.Username), "Database:Username missing")
-    .Validate(o => !string.IsNullOrWhiteSpace(o.Password), "Database:Password missing")
-    .ValidateOnStart();
+// Valide DatabaseOptions seulement si pas de DATABASE_URL
+if (!hasDatabaseUrl)
+{
+    builder.Services.AddOptions<DatabaseOptions>()
+        .Bind(builder.Configuration.GetSection("Database"))
+        .Validate(o => !string.IsNullOrWhiteSpace(o.Username), "Database:Username missing")
+        .Validate(o => !string.IsNullOrWhiteSpace(o.Password), "Database:Password missing")
+        .ValidateOnStart();
+}
+else
+{
+    builder.Services.AddOptions<DatabaseOptions>()
+        .Bind(builder.Configuration.GetSection("Database"));
+}
 
 // Auth JWT
 builder.Services
@@ -133,7 +147,7 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization();
 
-// HttpClients
+// HTTP Clients
 builder.Services.AddHttpClient<IRiotService, RiotService>((sp, client) =>
 {
     var riot = sp.GetRequiredService<IOptions<RiotApiOptions>>().Value;
@@ -148,8 +162,8 @@ builder.Services.AddHttpClient<IDiscordOAuthClient, DiscordOAuthClient>((sp, cli
 });
 
 // DI
-builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();  // ← nouveau
-builder.Services.AddScoped<IPlayerService, PlayerService>();        // ← remplace PlayerService direct
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IMatchProvider, MatchProvider>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<MatchProcessor>();
