@@ -96,8 +96,9 @@ public sealed class AuthController : ControllerBase
             Discriminator: me.Discriminator,
             AvatarUrl: avatarUrl
         ));
-
-        var frontUrl = $"http://localhost:3000/account/callback" +
+        
+        var frontendUrl = _config["FrontendUrl"] ?? "http://localhost:3000";
+        var frontUrl = $"{frontendUrl}/account/callback" +
                        $"?token={Uri.EscapeDataString(jwt.AccessToken)}" +
                        $"&username={Uri.EscapeDataString(me.Username ?? "")}" +
                        $"&avatarUrl={Uri.EscapeDataString(avatarUrl)}";
