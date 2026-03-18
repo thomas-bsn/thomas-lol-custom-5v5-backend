@@ -9,4 +9,8 @@ public class PlayerDto
     public string? RankTier { get; set; }
     public int? RankDivision { get; set; }
     public int? LP { get; set; }
+    public string? PeakTier { get; set; }
+    public int? PeakDivision { get; set; }
+    public string? PeakSeason { get; set; }
+    public int PeakLp { get; set; } = 0;
 }

@@ -66,6 +66,28 @@ public class PlayersController : ControllerBase
         await _service.RefreshAllRanksAsync();
         return Ok("Ranks mis à jour");
     }
+    
+    [HttpDelete("peak")]
+    [Authorize]
+    public async Task<IActionResult> DeletePeak()
+    {
+        var discordUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrWhiteSpace(discordUserId)) return Unauthorized();
+
+        await _service.UpdatePeakAsync(discordUserId, null, null, null, 0);
+        return Ok(new { ok = true });
+    }
+    
+    [HttpPost("peak")]
+    [Authorize]
+    public async Task<IActionResult> UpdatePeak([FromBody] UpdatePeakRequest request)
+    {
+        var discordUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrWhiteSpace(discordUserId)) return Unauthorized();
+
+        await _service.UpdatePeakAsync(discordUserId, request.PeakTier, request.PeakDivision, request.PeakSeason, request.PeakLp);
+        return Ok(new { ok = true });
+    }
 }
 
 public record LinkPlayerRequest(int PlayerId);

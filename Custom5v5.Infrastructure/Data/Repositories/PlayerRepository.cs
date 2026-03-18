@@ -13,9 +13,8 @@ public class PlayerRepository : IPlayerRepository
 
     public async Task<List<PlayerDto>> GetAllAsync()
     {
-        return await _db.Players
-            .Select(p => ToDto(p))
-            .ToListAsync();
+        var players = await _db.Players.ToListAsync();
+        return players.Select(p => ToDto(p)).ToList();
     }
 
     public Task<bool> ExistsByPuuidAsync(string puuid) =>
@@ -72,14 +71,31 @@ public class PlayerRepository : IPlayerRepository
         return player == null ? null : ToDto(player);
     }
 
+    public async Task UpdatePeakAsync(int playerId, string peakTier, int? peakDivision, string peakSeason, int peakLp)
+    {
+        var player = await _db.Players.FindAsync(playerId);
+        if (player == null) return;
+
+        player.PeakTier = peakTier;
+        player.PeakDivision = peakDivision;
+        player.PeakSeason = peakSeason;
+        player.PeakLp = peakLp;
+
+        await _db.SaveChangesAsync();
+    }
+
     private static PlayerDto ToDto(Player p) => new()
     {
         Id = p.Id,
         Prenom = p.Prenom,
         RiotId = p.RiotId,
         PUUID = p.PUUID,
-        RankTier = p.RankTier,
+        RankTier = p.RankTier ?? "UNRANKED",  // ← null → UNRANKED
         RankDivision = p.RankDivision,
-        LP = p.LP
+        LP = p.LP,
+        PeakTier = p.PeakTier,
+        PeakDivision = p.PeakDivision,
+        PeakSeason = p.PeakSeason,
+        PeakLp = p.PeakLp,
     };
 }

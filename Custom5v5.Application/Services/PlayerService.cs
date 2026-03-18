@@ -78,6 +78,18 @@ public class PlayerService : IPlayerService
 
         await _players.LinkUserAsync(playerId, user.Id);
     }
+    
+    public async Task UpdatePeakAsync(string discordUserId, string? peakTier, int? peakDivision, string? peakSeason, int peakLp)
+    {
+        var discordIdLong = long.Parse(discordUserId);
+        var user = await _users.GetByDiscordIdAsync(discordIdLong);
+        if (user == null) throw new Exception("User not found");
+
+        var player = await _players.GetByUserIdAsync(user.Id);
+        if (player == null) throw new Exception("Player not found");
+
+        await _players.UpdatePeakAsync(player.Id, peakTier, peakDivision, peakSeason, peakLp);
+    }
 
     public async Task<PlayerDto?> GetPlayerByDiscordIdAsync(string discordUserId)
     {
