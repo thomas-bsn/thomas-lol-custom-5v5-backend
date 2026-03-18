@@ -38,8 +38,22 @@ builder.Services
 // EF Core
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
-    var db = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-    var connection = $"Host={db.Host};Port={db.Port};Database={db.Database};Username={db.Username};Password={db.Password}";
+    var databaseUrl = builder.Configuration["DATABASE_URL"];
+    
+    string connection;
+    if (!string.IsNullOrWhiteSpace(databaseUrl))
+    {
+        // Format Railway: postgresql://user:password@host:port/database
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':');
+        connection = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]}";
+    }
+    else
+    {
+        var db = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+        connection = $"Host={db.Host};Port={db.Port};Database={db.Database};Username={db.Username};Password={db.Password}";
+    }
+    
     options.UseNpgsql(connection).UseSnakeCaseNamingConvention();
 });
 
